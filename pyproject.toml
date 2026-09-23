@@ -1,0 +1,22 @@
+[project]
+name = "ai-resumes-criticuier"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "arshad-syed245", email = "hamimarshad26@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "openai>=3.19.0",
+    "pypdf2>=3.0.1",
+    "python-dotenv>=1.2.3",
+    "streamlit>=1.64.0",
+]
+
+[project.scripts]
+ai-resumes-criticuier = "ai_resumes_criticuier:main"
+
+[build-system]
+requires = ["uv_build>=0.12.17,<0.13.0"]
+build-backend = "uv_build"
