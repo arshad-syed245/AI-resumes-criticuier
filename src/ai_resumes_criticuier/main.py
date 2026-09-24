@@ -2,18 +2,19 @@ import streamlit as st
 import PyPDF2
 import io
 import os
-from openai import OpenAI
+from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
 
-st.set_page_config(page_title="AI Resumes Criticuier", page_icon="pi", layout="centered")
-st.title("AI Resumed Criticuier")
+st.set_page_config(page_title="AI Resume Critiquer", page_icon="📝", layout="centered")
+st.title("AI Resume Critiquer")
 st.markdown("Upload your resume and get AI-generated feedback tailored to your needs!")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-uploaded_file = st.file_uploader("Upload your resume (PDF of TXT)", type=["pdf", "txt"])
-job_role = st.text_input("Enter the job role you're taregtting (optional)")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+uploaded_file = st.file_uploader("Upload your resume (PDF or TXT)", type=["pdf", "txt"])
+job_role = st.text_input("Enter the job role you're targeting (optional)")
 
 analyze = st.button("Analyze Resume")
 
@@ -32,35 +33,33 @@ def extract_text_from_file(uploaded_file):
 if analyze and uploaded_file:
     try:
         file_content = extract_text_from_file(uploaded_file)
-        
+
         if not file_content.strip():
-            st.error("File does not have any contnet...")
+            st.error("File does not have any content...")
             st.stop()
-        
-        prompt = f"""Please analyze this resume and provide constructive feedback. 
-        Focus on the following aspects:
-        1. Content clarity and impact
-        2. Skills presentation
-        3. Experience descriptions
-        4. Specific improvements for {job_role if job_role else 'general job applications'}
-        
-        Resume content:
-        {file_content}
-        
-        Please provide your analysis in a clear, structured format with specific recommendations."""
-        
-        client = OpenAI(api_key=OPENAI_API_KEY)
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are an expert resume reviewer with years of experience in HR and recruitment."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=1000
+
+        prompt = f"""You are an expert resume reviewer with years of experience in HR and recruitment.
+
+Please analyze this resume and provide constructive feedback.
+Focus on the following aspects:
+1. Content clarity and impact
+2. Skills presentation
+3. Experience descriptions
+4. Specific improvements for {job_role if job_role else 'general job applications'}
+
+Resume content:
+{file_content}
+
+Please provide your analysis in a clear, structured format with specific recommendations."""
+
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model="gemini-3.6-flash",
+            contents=prompt,
         )
+
         st.markdown("### Analysis Results")
-        st.markdown(response.choices[0].message.content)
-    
+        st.markdown(response.text)
+
     except Exception as e:
-        st.error(f"An error occured: {str(e)}")
+        st.error(f"An error occurred: {str(e)}")
